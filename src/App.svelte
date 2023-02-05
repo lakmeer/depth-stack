@@ -2,6 +2,8 @@
   import StereoImage from "./StereoImage.svelte";
 
   let images = [
+    { color: '/Hut-alternative.jpg',   depth: '/Hut-depthmap.jpg' },
+    { color: '/Mango-alternative.jpg', depth: '/Mango-depthmap.jpg' },
     { color: '/1.png', depth: '/1d.png' },
     { color: '/2.png', depth: '/2d.png' },
     { color: '/3.png', depth: '/3d.png' },
@@ -20,7 +22,8 @@
 
 <style>
   main {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-gap: 1rem;
   }
 </style>

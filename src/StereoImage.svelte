@@ -17,6 +17,8 @@
   export let auto:boolean = false;
   export let focus:number = 0.5;
 
+  export let showIndicator:boolean = true;
+
 
   // Const
 
@@ -69,7 +71,7 @@
 
     for (let x = 0; x < naturalSize.width; x++) {
       for (let y = 0; y < naturalSize.height; y++) {
-        const pixelIx = (y * naturalSize.height + x) * 4;
+        const pixelIx = (y * naturalSize.width + x) * 4;
 
         if (depthData.data[pixelIx] < depth) {
           layerData.data[pixelIx + 3] = 0;
@@ -177,6 +179,9 @@
       <span>.</span>
     </div>
   {/if}
+  {#if showIndicator}
+    <div class="indicator" style="top: {focusPoint.z * 100}%"></div>
+  {/if}
 </div>
 
 
@@ -230,6 +235,17 @@
   .loader span:nth-child(1) { animation-delay: 0.00s; }
   .loader span:nth-child(2) { animation-delay: 0.33s; }
   .loader span:nth-child(3) { animation-delay: 0.66s; }
+
+  .indicator {
+    position: absolute;
+    border: 20px solid transparent;
+    border-left-width: 0;
+    border-right-color: white;
+    top: 50%;
+    right: 0;
+    z-index: 1000;
+    transform: translate(0, -50%);
+  }
 
   @keyframes blink {
     0%   { opacity: 0; }
