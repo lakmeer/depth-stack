@@ -114,10 +114,7 @@
       focusPoint.y = cos(Date.now() / 1000 * 3);
     }
 
-    if (shown > 0) shown *= 0.9;
-    if (shown < 0.05) shown = 0;
-
-    console.log(shown);
+    if (shown > 0) shown = (shown < 0.02) ? 0 : shown * 0.93;
 
     layers.map((layer, ix) => {
       const p = (layers.length * focusPoint.z - ix) / layers.length * EXCURSION_PERCENT;
@@ -246,9 +243,9 @@
 
   .indicator {
     position: absolute;
-    border: 20px solid transparent;
-    border-left-width: 0;
-    border-right-color: white;
+    border-style: solid;
+    border-width: 10px 20px 10px 0;
+    border-color: transparent white transparent transparent;
     top: 50%;
     right: 0;
     z-index: 1000;
