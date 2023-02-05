@@ -1,3 +1,8 @@
+<script lang="ts" context="module">
+  type LayerCache = { [key: string]: Array<ImageData> }
+  let layerCache:LayerCache = {};
+</script>
+
 <script lang="ts">
   import { load } from './utils';
   import { onMount } from "svelte";
@@ -10,11 +15,13 @@
   export let color:string;
   export let depth:string;
   export let auto:boolean = false;
+  export let focus:number = 0.5;
 
 
   // Const
 
-  const DEPTH_RES = 4;
+  const DEPTH_RES = 8;
+  const EXCURSION_PERCENT = 10;
 
 
   // Dom
@@ -24,7 +31,8 @@
 
   // State
 
-  let focusPoint = { x: 0, y: 0, z: 0.5 };
+  let naturalSize = { width: 1, height: 1 };
+  let focusPoint = { x: 0, y: 0, z: focus };
   let loading = true;
   let running = true;
 
@@ -41,27 +49,36 @@
 
   const layerCanvas = ():HTMLCanvasElement => {
     const layer  = document.createElement("canvas");
-    layer.width  = 512;
-    layer.height = 512;
+    layer.width  = naturalSize.width;
+    layer.height = naturalSize.height;
     return layer;
   }
 
   const genLayer = (depth:number):HTMLCanvasElement => {
     const layer = layerCanvas();
     const ctx = layer.getContext("2d");
+
+    if (layerCache[color][depth]) {
+      ctx.putImageData(layerCache[color][depth], 0, 0);
+      return layer;
+    }
+
     ctx.putImageData(colorData, 0, 0);
 
-    const layerData = ctx.getImageData(0, 0, 512, 512);
+    const layerData = ctx.getImageData(0, 0, naturalSize.width, naturalSize.height);
 
-    for (let x = 0; x < 512; x++) {
-      for (let y = 0; y < 512; y++) {
-        const pixelIx = (y * 512 + x) * 4;
+    for (let x = 0; x < naturalSize.width; x++) {
+      for (let y = 0; y < naturalSize.height; y++) {
+        const pixelIx = (y * naturalSize.height + x) * 4;
 
         if (depthData.data[pixelIx] < depth) {
-          layerData.data[(y * 512 + x) * 4 + 3] = 0;
+          layerData.data[pixelIx + 3] = 0;
         }
       }
     }
+
+    if (!layerCache[color]) layerCache[color] = [];
+    layerCache[color][depth] = layerData;
 
     ctx.putImageData(layerData, 0, 0);
 
@@ -89,16 +106,17 @@
   //
 
   const render = () => {
-    layers.map((layer, ix) => {
-      const x = focusPoint.x * (layers.length * focusPoint.z - ix);
-      const y = focusPoint.y * (layers.length * focusPoint.z - ix);
-      layer.style.transform = `translate(${x}px, ${y}px)`;
-    });
-
     if (auto) {
-      focusPoint.x = sin(Date.now() / 1000);
-      focusPoint.y = cos(Date.now() / 1000);
+      focusPoint.x = sin(Date.now() / 1000 * 3);
+      focusPoint.y = cos(Date.now() / 1000 * 3);
     }
+
+    layers.map((layer, ix) => {
+      const p = (layers.length * focusPoint.z - ix) / layers.length * EXCURSION_PERCENT;
+      const x = focusPoint.x * p;
+      const y = focusPoint.y * p;
+      layer.style.transform = `translate(${x}%, ${y}%) scale(${1 + EXCURSION_PERCENT/50})`;
+    });
 
     if (running) requestAnimationFrame(render);
   }
@@ -116,11 +134,15 @@
   // Init
 
   onMount(async () => {
+    layerCache[color] = [];
+
     const colorImage = await load(color);
-    colorData = colorImage.getContext("2d").getImageData(0, 0, 512, 512);
+    naturalSize.width = colorImage.width;
+    naturalSize.height = colorImage.height;
+    colorData = colorImage.getContext("2d").getImageData(0, 0, naturalSize.width, naturalSize.height);
 
     const depthImage = await load(depth);
-    depthData = depthImage.getContext("2d").getImageData(0, 0, 512, 512);
+    depthData = depthImage.getContext("2d").getImageData(0, 0, naturalSize.width, naturalSize.height);
 
     // Begin with generate loop, render loop will be started from there
     generate();
@@ -131,7 +153,6 @@
       container.addEventListener('mousewheel', (e:WheelEvent) => {
         e.preventDefault();
         focusPoint.z = min(1, max(0, focusPoint.z - sign(e.deltaY) / 20));
-        console.log(focusPoint.z);
       });
     }
 
@@ -140,10 +161,15 @@
     };
   });
 
+  $: css = `
+    --w: ${naturalSize.width}px;
+    --h: ${naturalSize.height}px;
+    --a: ${naturalSize.width / naturalSize.height};
+  `;
 </script>
 
 
-<div bind:this={container}>
+<div class="StereoImage" bind:this={container} style="{css}">
   {#if loading}
     <div class="loader">
       <span>.</span>
@@ -156,20 +182,26 @@
 
 <style>
 
-  div {
-    width:    512px;
-    height:   512px;
+  .StereoImage {
     position: relative;
     overflow: hidden;
+    aspect-ratio: var(--a);
   }
 
-  div :global(canvas) {
+  .StereoImage :global(canvas) {
     display: block;
     position: absolute;
     top:  0px;
     left: 0px;
+    width: 100%;
+    height: 100%;
     pointer-events: none;
-    border: 2px solid black;
+    border: 3px solid black;
+  }
+
+  .StereoImage :global(canvas:first-child) {
+    position: relative;
+    border: none;
   }
 
   .loader {
