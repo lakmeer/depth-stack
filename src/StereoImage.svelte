@@ -16,7 +16,7 @@
   export let depth:string;
   export let auto:boolean = false;
   export let focus:number = 0.5;
-  export let zStride:number = 99;
+  export let zStride:number = 8;
 
 
   // Const
