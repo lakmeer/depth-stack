@@ -15,19 +15,19 @@
 
   // TODO
   // - Proper drawing instead of dom layers
-  // - Encode depth as alpha channel
-  // - Read alpha channel
+  // - Support combined rgb/depth images with alpha channel
+  // - Fancy bit hackery for performance
 
 </script>
 
 
 <main>
 
-  <HexView.Grid rowSize={5} margin={10}>
+  <HexView.Grid rowSize={5}>
     {#each r as i}
       {#each images as image}
         <HexView.Cell>
-          <StereoImage color={image.color} depth={image.depth} zStride={8} focus={0} auto />
+          <StereoImage color={image.color} depth={image.depth} />
         </HexView.Cell>
       {/each}
     {/each}

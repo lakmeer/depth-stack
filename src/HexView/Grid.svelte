@@ -5,7 +5,7 @@
 </script>
 
 
-<div class="HexView main" style="--n: {rowSize};">
+<div class="HexView__Grid main" style="--n: {rowSize};">
   <div class="container">
     <slot></slot>
   </div>
