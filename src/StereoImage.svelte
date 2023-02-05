@@ -37,6 +37,7 @@
   let focusPoint = { x: 0, y: 0, z: focus };
   let loading = true;
   let running = true;
+  let shown = 1;
 
 
   //
@@ -113,6 +114,11 @@
       focusPoint.y = cos(Date.now() / 1000 * 3);
     }
 
+    if (shown > 0) shown *= 0.9;
+    if (shown < 0.05) shown = 0;
+
+    console.log(shown);
+
     layers.map((layer, ix) => {
       const p = (layers.length * focusPoint.z - ix) / layers.length * EXCURSION_PERCENT;
       const x = focusPoint.x * p;
@@ -154,7 +160,8 @@
       container.addEventListener('mousemove', trackMouse);
       container.addEventListener('mousewheel', (e:WheelEvent) => {
         e.preventDefault();
-        focusPoint.z = min(1, max(0, focusPoint.z - sign(e.deltaY) / 20));
+        shown = 1;
+        focusPoint.z = min(1, max(0, focusPoint.z + sign(e.deltaY) / 20));
       });
     }
 
@@ -167,6 +174,7 @@
     --w: ${naturalSize.width}px;
     --h: ${naturalSize.height}px;
     --a: ${naturalSize.width / naturalSize.height};
+    --i: ${shown};
   `;
 </script>
 
@@ -245,6 +253,7 @@
     right: 0;
     z-index: 1000;
     transform: translate(0, -50%);
+    opacity: var(--i);
   }
 
   @keyframes blink {
