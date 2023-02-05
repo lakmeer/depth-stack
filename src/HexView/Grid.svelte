@@ -29,7 +29,6 @@
 
   .container {
     font-size: 0;
-    border: 3px solid magenta;
     padding-bottom: calc(var(--z) + var(--m));
   }
 

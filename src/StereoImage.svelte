@@ -16,11 +16,12 @@
   export let depth:string;
   export let auto:boolean = false;
   export let focus:number = 0.5;
+  export let zStride:number = 99;
 
 
   // Const
 
-  const DEPTH_RES = 16;
+  const DEPTH_RES = zStride;
   const EXCURSION_PERCENT = 10;
 
 
@@ -196,12 +197,10 @@
     width: 100%;
     height: 100%;
     pointer-events: none;
-    border: 3px solid black;
   }
 
   .StereoImage :global(canvas:first-child) {
     position: relative;
-    border: none;
   }
 
   .loader {

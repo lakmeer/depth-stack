@@ -23,21 +23,11 @@
 
 <main>
 
-  <h2> Natural Size </h2>
-
-  <section>
-    {#each images as image}
-      <StereoImage color={image.color} depth={image.depth} focus={1} />
-    {/each}
-  </section>
-
-  <h2> HexView </h2>
-
-  <HexView.Grid rowSize={5}>
+  <HexView.Grid rowSize={5} margin={10}>
     {#each r as i}
       {#each images as image}
         <HexView.Cell>
-          <StereoImage color={image.color} depth={image.depth} focus={0} auto />
+          <StereoImage color={image.color} depth={image.depth} zStride={8} focus={0} auto />
         </HexView.Cell>
       {/each}
     {/each}
@@ -48,27 +38,12 @@
 
 <style>
 
-  main {
-  }
-
-  section {
-    display: flex;
-  }
-
-  section :global(.StereoImage) {
-    flex: 1;
-  }
-
-  h2 {
-    color: white;
-  }
-
-  :global(.HexView__Cell .StereoImage) {
+  main :global(.HexView__Cell .StereoImage) {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
     height: 100%;
+    transform: translate(-50%, -50%);
   }
 
 </style>
